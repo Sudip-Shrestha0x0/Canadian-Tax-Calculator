@@ -1,6 +1,6 @@
 # Canadian Tax Calculator 
 
-A comprehensive web-based tax calculator for Canadian federal and provincial income taxes. Built with vanilla HTML, CSS, and JavaScript for accuracy, performance, and ease of use.
+A comprehensive web-based tax calculator for Canadian federal and provincial income taxes. Built with vanilla HTML, CSS, and JavaScript for accuracy, performance, and ease of use in a single file.
 
 ## 🚀 Live Demo
 
