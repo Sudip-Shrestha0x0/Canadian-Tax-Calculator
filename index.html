@@ -1,0 +1,3000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canada Tax Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-red: #DC143C;
+            --canada-red: #FF0000;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+            --bg-light: #f8f9fa;
+            --bg-white: #ffffff;
+            --border-color: #dee2e6;
+            --success-green: #28a745;
+            --warning-orange: #fd7e14;
+            --error-red: #dc3545;
+            --shadow: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 6px rgba(0,0,0,0.15);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-red) 0%, #8B0000 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50 15 L65 35 L85 35 L70 50 L75 70 L50 60 L25 70 L30 50 L15 35 L35 35 Z" fill="rgba(255,255,255,0.1)"/></svg>') repeat;
+            background-size: 40px 40px;
+            opacity: 0.1;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .maple-leaf {
+            font-size: 2rem;
+            color: #FFD700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .nav-pills {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-pill {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-pill:hover, .nav-pill.active {
+            background: white;
+            color: var(--primary-red);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--bg-light);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-red);
+            box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1);
+        }
+
+        .form-input.error {
+            border-color: var(--error-red);
+            background-color: rgba(220, 53, 69, 0.05);
+        }
+
+        .error-message {
+            color: var(--error-red);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .form-input.error + .error-message {
+            display: block;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-red) 0%, #B22222 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: var(--text-light);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success-green);
+            color: white;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(transparent, rgba(255,255,255,0.1), transparent);
+            animation: rotate 6s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-card.positive {
+            background: linear-gradient(135deg, var(--success-green) 0%, #20c997 100%);
+        }
+
+        .result-card.negative {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .result-card.neutral {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        }
+
+        .result-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .result-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tax-breakdown {
+            margin-top: 1.5rem;
+        }
+
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: var(--bg-light);
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .breakdown-item:hover {
+            background: #e9ecef;
+        }
+
+        .breakdown-item:last-child {
+            background: var(--primary-red);
+            color: white;
+            font-weight: bold;
+        }
+
+        .tax-bracket-visual {
+            margin-top: 1rem;
+        }
+
+        .bracket-bar {
+            display: flex;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow);
+        }
+
+        .bracket-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .bracket-segment:hover {
+            transform: scaleY(1.1);
+        }
+
+        .bracket-15 { background: #3498db; }
+        .bracket-205 { background: #e74c3c; }
+        .bracket-26 { background: #f39c12; }
+        .bracket-29 { background: #9b59b6; }
+        .bracket-33 { background: #34495e; }
+
+        .tooltip {
+            position: relative;
+            cursor: help;
+        }
+
+        .tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text-dark);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .tooltip:hover::after {
+            opacity: 1;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-light);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success-green), var(--primary-red));
+            transition: width 0.3s ease;
+        }
+
+        .info-panel {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .warning-panel {
+            background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .calculation-summary {
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-lg);
+            margin-top: 2rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, var(--primary-red), #B22222);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feature-card:hover::before {
+            opacity: 0.05;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--primary-red);
+            position: relative;
+            z-index: 1;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .comparison-table th {
+            background: var(--bg-light);
+            font-weight: 600;
+        }
+
+        .comparison-table tr:hover {
+            background: rgba(220, 20, 60, 0.05);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            border: 4px solid var(--bg-light);
+            border-top: 4px solid var(--primary-red);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .save-scenario {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--bg-light);
+            border-radius: 8px;
+        }
+
+        .saved-scenarios {
+            margin-top: 1rem;
+        }
+
+        .scenario-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            background: white;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .disclaimer {
+            background: var(--warning-orange);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-pills {
+                justify-content: center;
+                margin-top: 1rem;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .print-only {
+            display: none;
+        }
+
+        @media print {
+            .nav-pills, .btn, .header {
+                display: none !important;
+            }
+            
+            .print-only {
+                display: block !important;
+            }
+            
+            .page {
+                display: block !important;
+            }
+            
+            body {
+                background: white;
+            }
+            
+            .card {
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="maple-leaf">🍁</span>
+                Canada Tax Calculator
+            </div>
+            <nav class="nav-pills">
+                <button class="nav-pill active" data-page="dashboard">Dashboard</button>
+                <button class="nav-pill" data-page="income">Income</button>
+                <button class="nav-pill" data-page="deductions">Deductions</button>
+                <button class="nav-pill" data-page="rrsp">RRSP/TFSA</button>
+                <button class="nav-pill" data-page="investment">Investment</button>
+                <button class="nav-pill" data-page="family">Family</button>
+                <button class="nav-pill" data-page="planning">Planning</button>
+                <button class="nav-pill" data-page="results">Results</button>
+                <button class="nav-pill" data-page="documents">Documents</button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Dashboard Page -->
+        <div id="dashboard" class="page active">
+            <div class="info-panel">
+                <h2>🇨🇦 Professional Canada Tax Calculator 2024</h2>
+                <p>Complete tax calculations for all 13 provinces & territories. Includes accurate 2024 tax brackets, RRSP optimization, investment income, comprehensive family benefits, and advanced tax planning tools.</p>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Quick Tax Calculator</h3>
+                    </div>
+                    <form id="quickCalcForm">
+                        <div class="form-group">
+                            <label class="form-label">Annual Income</label>
+                            <input type="number" id="quickIncome" class="form-input" placeholder="75000" value="75000" min="0" max="10000000" step="1">
+                            <div class="error-message">Please enter a valid income amount</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Province/Territory</label>
+                            <select id="quickProvince" class="form-select">
+                                <option value="ON">Ontario</option>
+                                <option value="BC">British Columbia</option>
+                                <option value="AB">Alberta</option>
+                                <option value="QC">Quebec</option>
+                                <option value="NS">Nova Scotia</option>
+                                <option value="NB">New Brunswick</option>
+                                <option value="MB">Manitoba</option>
+                                <option value="SK">Saskatchewan</option>
+                                <option value="PE">Prince Edward Island</option>
+                                <option value="NL">Newfoundland and Labrador</option>
+                                <option value="YT">Yukon</option>
+                                <option value="NT">Northwest Territories</option>
+                                <option value="NU">Nunavut</option>
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="calculateQuickTax()">Calculate Tax</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Tax Results</h3>
+                    </div>
+                    <div id="quickResults">
+                        <div class="results-grid">
+                            <div class="result-card neutral">
+                                <div class="result-value" id="grossIncome">$75,000</div>
+                                <div class="result-label">Gross Income</div>
+                            </div>
+                            <div class="result-card negative">
+                                <div class="result-value" id="totalTax">$16,483</div>
+                                <div class="result-label">Total Tax</div>
+                            </div>
+                            <div class="result-card positive">
+                                <div class="result-value" id="netIncome">$58,517</div>
+                                <div class="result-label">Net Income</div>
+                            </div>
+                            <div class="result-card neutral">
+                                <div class="result-value" id="marginalRate">30.5%</div>
+                                <div class="result-label">Marginal Rate</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="save-scenario">
+                        <input type="text" id="scenarioName" class="form-input" placeholder="Save this scenario (e.g., 'Current Situation')" style="margin-bottom: 0.5rem;">
+                        <button type="button" class="btn btn-secondary" onclick="saveScenario()">Save Scenario</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-card" onclick="showPage('income')">
+                    <div class="feature-icon">💰</div>
+                    <h3>Detailed Income</h3>
+                    <p>Employment, self-employment, investment income, and other sources with validation</p>
+                </div>
+                <div class="feature-card" onclick="showPage('deductions')">
+                    <div class="feature-icon">📝</div>
+                    <h3>Deductions & Credits</h3>
+                    <p>Medical expenses, donations, tuition, and tax credits with thresholds</p>
+                </div>
+                <div class="feature-card" onclick="showPage('rrsp')">
+                    <div class="feature-icon">🏦</div>
+                    <h3>RRSP/TFSA Optimizer</h3>
+                    <p>2024 limits: RRSP $31,560, TFSA $7,000 with contribution room tracking</p>
+                </div>
+                <div class="feature-card" onclick="showPage('investment')">
+                    <div class="feature-icon">📈</div>
+                    <h3>Investment Calculator</h3>
+                    <p>Capital gains (50% inclusion), dividends (38% gross-up), and tax optimization</p>
+                </div>
+                <div class="feature-card" onclick="showPage('family')">
+                    <div class="feature-icon">👨‍👩‍👧‍👦</div>
+                    <h3>Family Benefits</h3>
+                    <p>CCB up to $7,997/child, pension splitting, and provincial benefits</p>
+                </div>
+                <div class="feature-card" onclick="showPage('planning')">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Tax Planning</h3>
+                    <p>Multi-scenario comparison and optimization recommendations</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Income Page -->
+        <div id="income" class="page">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Comprehensive Income Calculator</h3>
+                </div>
+                <div class="warning-panel">
+                    <strong>2024 Tax Year:</strong> Enter all income received in 2024. Keep receipts and T-slips for verification.
+                </div>
+                <div class="form-grid">
+                    <div>
+                        <h4>Employment Income</h4>
+                        <div class="form-group">
+                            <label class="form-label">Employment Income (T4)</label>
+                            <input type="number" id="employmentIncome" class="form-input" placeholder="0" min="0" max="1000000">
+                            <div class="error-message">Enter a valid employment income</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tips and Gratuities</label>
+                            <input type="number" id="tips" class="form-input" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Commissions</label>
+                            <input type="number" id="commissions" class="form-input" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Bonuses</label>
+                            <input type="number" id="bonuses" class="form-input" placeholder="0" min="0">
+                        </div>
+                    </div>
+                    <div>
+                        <h4>Self-Employment Income</h4>
+                        <div class="form-group">
+                            <label class="form-label">Business Income</label>
+                            <input type="number" id="businessIncome" class="form-input" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Professional Income</label>
+                            <input type="number" id="professionalIncome" class="form-input" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Business Expenses</label>
+                            <input type="number" id="businessExpenses" class="form-input" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Home Office Expenses</label>
+                            <input type="number" id="homeOfficeExpenses" class="form-input" placeholder="0" min="0">
+                        </div>
+                    </div>
+                    <div>
+                        <h4>Investment Income</h4>
+                        <div class="form-group">
+                            <label class="form-label">Interest Income</label>
+                            <input type="number" id="interestIncome" class="form-input" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Eligible Dividends (Canadian)</label>
+                            <input type="number" id="eligibleDividends" class="form-input" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Other Dividends</label>
+                            <input type="number" id="otherDividends" class="form-input" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Capital Gains</label>
+                            <input type="number" id="capitalGains" class="form-input" placeholder="0" min="0">
+                        </div>
+                    </div>
+                    <div>
+                        <h4>Other Income</h4>
+                        <div class="form-group">
+                            <label class="form-label">Pension Income</label>
+                            <input type="number" id="pensionIncome" class="form-input" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">RRSP Withdrawals</label>
+                            <input type="number" id="rrspWithdrawals" class="form-input" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">EI Benefits</label>
+                            <input type="number" id="eiBenefits" class="form-input" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Other Income</label>
+                            <input type="number" id="otherIncome" class="form-input" placeholder="0" min="0">
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="calculateDetailedIncome()">Calculate Total Income</button>
+                
+                <div id="incomeResults" class="calculation-summary" style="display: none;">
+                    <h4>Income Summary</h4>
+                    <div class="breakdown-item">
+                        <span>Employment Income:</span>
+                        <span id="employmentTotal">$0</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Self-Employment Income:</span>
+                        <span id="selfEmploymentTotal">$0</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Investment Income:</span>
+                        <span id="investmentTotal">$0</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Other Income:</span>
+                        <span id="otherIncomeTotal">$0</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span><strong>Total Income:</strong></span>
+                        <span id="grandTotal"><strong>$0</strong></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deductions Page -->
+        <div id="deductions" class="page">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Deductions & Tax Credits</h3>
+                </div>
+                <div class="info-panel">
+                    <strong>2024 Thresholds:</strong> Medical expenses: 3% of income or $2,759 (whichever is lower). Charitable donations: up to 75% of net income.
+                </div>
+                <div class="form-grid">
+                    <div>
+                        <h4>Common Deductions</h4>
+                        <div class="form-group">
+                            <label class="form-label">RRSP Contributions (Max: $31,560)</label>
+                            <input type="number" id="rrspContributions" class="form-input" placeholder="0" min="0" max="31560">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Union/Professional Dues</label>
+                            <input type="number" id="unionDues" class="form-input" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Childcare Expenses</label>
+                            <input type="number" id="childcareExpenses" class="form-input" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Employment Expenses</label>
+                            <input type="number" id="employmentExpenses" class="form-input" placeholder="0" min="0">
+                        </div>
+                    </div>
+                    <div>
+                        <h4>Tax Credits</h4>
+                        <div class="form-group">
+                            <label class="form-label">Medical Expenses</label>
+                            <input type="number" id="medicalExpenses" class="form-input" placeholder="0" min="0">
+                            <small>Threshold: 3% of income or $2,759 (whichever is lower)</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Charitable Donations</label>
+                            <input type="number" id="charitableDonations" class="form-input" placeholder="0" min="0">
+                            <small>15% credit on first $200, 29% on additional amounts</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tuition Fees</label>
+                            <input type="number" id="tuitionFees" class="form-input" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Student Loan Interest</label>
+                            <input type="number" id="studentLoanInterest" class="form-input" placeholder="0" min="0">
+                        </div>
+                    </div>
+                    <div>
+                        <h4>Other Credits</h4>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="disabilityCredit">
+                                <label>Disability Tax Credit</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ageAmount">
+                                <label>Age Amount (65+)</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="pensionIncomeAmount">
+                                <label>Pension Income Amount</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="publicTransitCredit">
+                                <label>Public Transit Credit</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Other Credits Amount</label>
+                            <input type="number" id="otherCredits" class="form-input" placeholder="0" min="0">
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="calculateDeductions()">Calculate Deductions & Credits</button>
+                
+                <div id="deductionsResults" class="calculation-summary" style="display: none;">
+                    <h4>Deductions & Credits Summary</h4>
+                    <div id="deductionsBreakdown"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RRSP/TFSA Page -->
+        <div id="rrsp" class="page">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">RRSP/TFSA Optimization</h3>
+                </div>
+                <div class="warning-panel">
+                    <strong>2024 Limits:</strong> RRSP contribution limit is 18% of income up to $31,560. TFSA contribution room is $7,000. Optimize based on your tax situation.
+                </div>
+                <div class="form-grid">
+                    <div>
+                        <h4>RRSP Calculator</h4>
+                        <div class="form-group">
+                            <label class="form-label">2023 Earned Income</label>
+                            <input type="number" id="prevYearIncome" class="form-input" placeholder="75000" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Pension Adjustment</label>
+                            <input type="number" id="pensionAdjustment" class="form-input" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Unused RRSP Room (Carry Forward)</label>
+                            <input type="number" id="unusedRrspRoom" class="form-input" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Current Marginal Tax Rate (%)</label>
+                            <input type="number" id="currentMarginalRate" class="form-input" placeholder="30" min="0" max="60" step="0.1">
+                        </div>
+                        <div id="rrspRoom" class="result-card neutral">
+                            <div class="result-value">$13,500</div>
+                            <div class="result-label">Available RRSP Room</div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>TFSA Calculator</h4>
+                        <div class="form-group">
+                            <label class="form-label">Year You Turned 18</label>
+                            <input type="number" id="ageAt18" class="form-input" placeholder="2000" min="1991" max="2024">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Total TFSA Contributions to Date</label>
+                            <input type="number" id="prevTfsaContributions" class="form-input" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Total TFSA Withdrawals</label>
+                            <input type="number" id="tfsaWithdrawals" class="form-input" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Expected Retirement Tax Rate (%)</label>
+                            <input type="number" id="retirementMarginalRate" class="form-input" placeholder="20" min="0" max="60" step="0.1">
+                        </div>
+                        <div id="tfsaRoom" class="result-card positive">
+                            <div class="result-value">$88,000</div>
+                            <div class="result-label">Available TFSA Room</div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="calculateRrspTfsa()">Optimize Contributions</button>
+                
+                <div class="calculation-summary" id="rrspOptimization" style="display: none;">
+                    <h4>Optimization Recommendation</h4>
+                    <div id="optimizationAdvice"></div>
+                    <div class="results-grid" style="margin-top: 1rem;">
+                        <div class="result-card neutral">
+                            <div class="result-value" id="recommendedRrsp">$0</div>
+                            <div class="result-label">Recommended RRSP</div>
+                        </div>
+                        <div class="result-card positive">
+                            <div class="result-value" id="recommendedTfsa">$0</div>
+                            <div class="result-label">Recommended TFSA</div>
+                        </div>
+                        <div class="result-card neutral">
+                            <div class="result-value" id="taxSavings">$0</div>
+                            <div class="result-label">Tax Savings</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Investment Page -->
+        <div id="investment" class="page">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Investment Income Calculator</h3>
+                </div>
+                <div class="info-panel">
+                    <strong>2024 Rules:</strong> Capital gains 50% inclusion rate. Eligible dividends 38% gross-up with 25.75% federal credit. Plan for tax efficiency.
+                </div>
+                <div class="form-grid">
+                    <div>
+                        <h4>Dividend Income</h4>
+                        <div class="form-group">
+                            <label class="form-label">Eligible Dividends (Canadian)</label>
+                            <input type="number" id="eligibleDivs" class="form-input" placeholder="0" min="0">
+                            <small>38% gross-up, 25.75% federal credit</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Other Canadian Dividends</label>
+                            <input type="number" id="otherCanadianDividends" class="form-input" placeholder="0" min="0">
+                            <small>15% gross-up, 10.03% federal credit</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Foreign Dividends</label>
+                            <input type="number" id="foreignDividends" class="form-input" placeholder="0" min="0">
+                            <small>Fully taxable, foreign tax credit may apply</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Foreign Tax Paid</label>
+                            <input type="number" id="foreignTaxPaid" class="form-input" placeholder="0" min="0">
+                        </div>
+                    </div>
+                    <div>
+                        <h4>Capital Gains/Losses</h4>
+                        <div class="form-group">
+                            <label class="form-label">Capital Gains</label>
+                            <input type="number" id="capGains" class="form-input" placeholder="0" min="0">
+                            <small>50% inclusion rate</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Capital Losses (Current Year)</label>
+                            <input type="number" id="capLosses" class="form-input" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Carried Forward Losses</label>
+                            <input type="number" id="carriedLosses" class="form-input" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Principal Residence Exemption</label>
+                            <input type="number" id="principalResidenceGain" class="form-input" placeholder="0" min="0">
+                            <small>Usually tax-free</small>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>Other Investment Income</h4>
+                        <div class="form-group">
+                            <label class="form-label">Interest Income</label>
+                            <input type="number" id="investmentInterest" class="form-input" placeholder="0" min="0">
+                            <small>Fully taxable</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">REIT Distributions</label>
+                            <input type="number" id="reitDistributions" class="form-input" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Rental Income</label>
+                            <input type="number" id="rentalIncome" class="form-input" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Rental Expenses</label>
+                            <input type="number" id="rentalExpenses" class="form-input" placeholder="0" min="0">
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="calculateInvestmentTax()">Calculate Investment Tax</button>
+                
+                <div id="investmentResults" class="calculation-summary" style="display: none;">
+                    <h4>Investment Tax Summary</h4>
+                    <div class="results-grid">
+                        <div class="result-card neutral">
+                            <div class="result-value" id="grossedUpDividends">$0</div>
+                            <div class="result-label">Grossed-up Dividends</div>
+                        </div>
+                        <div class="result-card neutral">
+                            <div class="result-value" id="taxableCapitalGains">$0</div>
+                            <div class="result-label">Taxable Capital Gains</div>
+                        </div>
+                        <div class="result-card positive">
+                            <div class="result-value" id="dividendTaxCredit">$0</div>
+                            <div class="result-label">Dividend Tax Credit</div>
+                        </div>
+                        <div class="result-card positive">
+                            <div class="result-value" id="foreignTaxCredit">$0</div>
+                            <div class="result-label">Foreign Tax Credit</div>
+                        </div>
+                    </div>
+                    <div id="investmentBreakdown" style="margin-top: 1rem;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Family Page -->
+        <div id="family" class="page">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Family Benefits Calculator</h3>
+                </div>
+                <div class="info-panel">
+                    <strong>2024 CCB:</strong> Up to $7,997/year per child under 6, $6,748/year per child 6-17. Reduced based on family income over $37,487.
+                </div>
+                <div class="form-grid">
+                    <div>
+                        <h4>Canada Child Benefit (CCB)</h4>
+                        <div class="form-group">
+                            <label class="form-label">Number of Children Under 6</label>
+                            <input type="number" id="childrenUnder6" class="form-input" placeholder="0" min="0" max="20">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Number of Children 6-17</label>
+                            <input type="number" id="children6to17" class="form-input" placeholder="0" min="0" max="20">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Family Net Income (2024)</label>
+                            <input type="number" id="familyIncome" class="form-input" placeholder="75000" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Children with Disability Tax Credit</label>
+                            <input type="number" id="disabledChildren" class="form-input" placeholder="0" min="0">
+                            <small>Additional $3,322 per child</small>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>Pension Income Splitting</h4>
+                        <div class="form-group">
+                            <label class="form-label">Your Income</label>
+                            <input type="number" id="primaryIncome" class="form-input" placeholder="75000" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Spouse's Income</label>
+                            <input type="number" id="spouseIncome" class="form-input" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Eligible Pension Income</label>
+                            <input type="number" id="eligiblePension" class="form-input" placeholder="0" min="0">
+                            <small>Up to 50% can be allocated to spouse</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Amount to Split (%)</label>
+                            <input type="number" id="splitPercentage" class="form-input" placeholder="0" min="0" max="50" step="1">
+                        </div>
+                    </div>
+                    <div>
+                        <h4>Spousal Credits</h4>
+                        <div class="form-group">
+                            <label class="form-label">Spousal Amount</label>
+                            <input type="number" id="spousalAmount" class="form-input" placeholder="0" min="0">
+                            <small>If spouse earns less than basic personal amount</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Caregiver Amount</label>
+                            <input type="number" id="caregiverAmount" class="form-input" placeholder="0" min="0">
+                        </div>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="eligibleDependentCredit">
+                                <label>Eligible Dependent Credit</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="childFitnessCredit">
+                                <label>Child Fitness Credit</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="calculateFamilyBenefits()">Calculate Family Benefits</button>
+                
+                <div id="familyResults" class="calculation-summary" style="display: none;">
+                    <h4>Family Benefits Summary</h4>
+                    <div class="results-grid">
+                        <div class="result-card positive">
+                            <div class="result-value" id="ccbAmount">$0</div>
+                            <div class="result-label">Annual CCB</div>
+                        </div>
+                        <div class="result-card positive">
+                            <div class="result-value" id="childDisabilityBenefit">$0</div>
+                            <div class="result-label">Child Disability Benefit</div>
+                        </div>
+                        <div class="result-card positive">
+                            <div class="result-value" id="pensionSplitSavings">$0</div>
+                            <div class="result-label">Pension Split Tax Savings</div>
+                        </div>
+                        <div class="result-card positive">
+                            <div class="result-value" id="provincialBenefits">$0</div>
+                            <div class="result-label">Provincial Benefits</div>
+                        </div>
+                    </div>
+                    <div id="familyBreakdown" style="margin-top: 1rem;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Planning Page -->
+        <div id="planning" class="page">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Tax Planning & Scenario Comparison</h3>
+                </div>
+                <div class="form-grid">
+                    <div>
+                        <h4>Current Scenario</h4>
+                        <div class="form-group">
+                            <label class="form-label">Current Income</label>
+                            <input type="number" id="scenario1Income" class="form-input" placeholder="75000" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Current RRSP Contribution</label>
+                            <input type="number" id="scenario1Rrsp" class="form-input" placeholder="5000" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Current TFSA Contribution</label>
+                            <input type="number" id="scenario1Tfsa" class="form-input" placeholder="2000" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Current Charitable Donations</label>
+                            <input type="number" id="scenario1Donations" class="form-input" placeholder="500" min="0">
+                        </div>
+                    </div>
+                    <div>
+                        <h4>Optimized Scenario</h4>
+                        <div class="form-group">
+                            <label class="form-label">Projected Income</label>
+                            <input type="number" id="scenario2Income" class="form-input" placeholder="75000" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Optimized RRSP Contribution</label>
+                            <input type="number" id="scenario2Rrsp" class="form-input" placeholder="13500" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Optimized TFSA Contribution</label>
+                            <input type="number" id="scenario2Tfsa" class="form-input" placeholder="7000" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Planned Charitable Donations</label>
+                            <input type="number" id="scenario2Donations" class="form-input" placeholder="2000" min="0">
+                        </div>
+                    </div>
+                    <div>
+                        <h4>Multi-Year Planning</h4>
+                        <div class="form-group">
+                            <label class="form-label">Expected Annual Income Growth (%)</label>
+                            <input type="number" id="incomeGrowth" class="form-input" placeholder="3" min="-10" max="20" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Planning Years</label>
+                            <input type="number" id="planningYears" class="form-input" placeholder="5" min="1" max="30">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Expected Inflation (%)</label>
+                            <input type="number" id="inflation" class="form-input" placeholder="2.5" min="0" max="10" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Investment Return (%)</label>
+                            <input type="number" id="investmentReturn" class="form-input" placeholder="7" min="0" max="20" step="0.1">
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="compareScenarios()">Compare Scenarios</button>
+                
+                <div id="scenarioComparison" class="calculation-summary" style="display: none;">
+                    <h4>Scenario Comparison</h4>
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Current Scenario</th>
+                                <th>Optimized Scenario</th>
+                                <th>Difference</th>
+                                <th>Improvement</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comparisonTableBody">
+                        </tbody>
+                    </table>
+                    
+                    <div id="multiYearProjection" style="margin-top: 2rem;">
+                        <h4>Multi-Year Projection</h4>
+                        <div class="results-grid">
+                            <div class="result-card positive">
+                                <div class="result-value" id="projectedSavings">$0</div>
+                                <div class="result-label">Projected Tax Savings</div>
+                            </div>
+                            <div class="result-card positive">
+                                <div class="result-value" id="projectedWealth">$0</div>
+                                <div class="result-label">Additional Wealth</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="saved-scenarios">
+                    <h4>Saved Scenarios</h4>
+                    <div id="savedScenariosList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Page -->
+        <div id="results" class="page">
+            <div class="print-only">
+                <h1>Canadian Tax Calculator Pro - Tax Summary Report</h1>
+                <p>Generated on: <span id="reportDate"></span></p>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Comprehensive Tax Results</h3>
+                    <div>
+                        <button class="btn btn-secondary" onclick="generatePrintReport()">📄 Print Report</button>
+                        <button class="btn btn-secondary" onclick="exportResults()">💾 Export Data</button>
+                    </div>
+                </div>
+                
+                <div class="results-grid">
+                    <div class="result-card neutral">
+                        <div class="result-value" id="finalGrossIncome">$0</div>
+                        <div class="result-label">Gross Income</div>
+                    </div>
+                    <div class="result-card negative">
+                        <div class="result-value" id="finalFederalTax">$0</div>
+                        <div class="result-label">Federal Tax</div>
+                    </div>
+                    <div class="result-card negative">
+                        <div class="result-value" id="finalProvincialTax">$0</div>
+                        <div class="result-label">Provincial Tax</div>
+                    </div>
+                    <div class="result-card negative">
+                        <div class="result-value" id="finalCppEi">$0</div>
+                        <div class="result-label">CPP/EI</div>
+                    </div>
+                    <div class="result-card negative">
+                        <div class="result-value" id="finalTotalTax">$0</div>
+                        <div class="result-label">Total Tax & Deductions</div>
+                    </div>
+                    <div class="result-card positive">
+                        <div class="result-value" id="finalNetIncome">$0</div>
+                        <div class="result-label">Net Income</div>
+                    </div>
+                    <div class="result-card neutral">
+                        <div class="result-value" id="finalAverageRate">0%</div>
+                        <div class="result-label">Average Tax Rate</div>
+                    </div>
+                    <div class="result-card neutral">
+                        <div class="result-value" id="finalMarginalRate">0%</div>
+                        <div class="result-label">Marginal Tax Rate</div>
+                    </div>
+                </div>
+
+                <div class="tax-breakdown">
+                    <h4>Detailed Tax Breakdown</h4>
+                    <div id="taxBreakdownList">
+                        <!-- Tax breakdown items will be populated here -->
+                    </div>
+                </div>
+
+                <div class="tax-bracket-visual">
+                    <h4>Tax Bracket Visualization</h4>
+                    <div class="bracket-bar" id="taxBracketBar">
+                        <!-- Tax bracket visualization will be populated here -->
+                    </div>
+                    <div id="bracketLegend"></div>
+                </div>
+                
+                <div id="optimizationSuggestions" class="calculation-summary">
+                    <h4>Optimization Suggestions</h4>
+                    <div id="suggestionsList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documents Page -->
+        <div id="documents" class="page">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Tax Document Organizer & Checklist</h3>
+                </div>
+                
+                <div class="form-grid">
+                    <div>
+                        <h4>Income Documents</h4>
+                        <div class="checkbox-group" style="flex-direction: column; align-items: flex-start;">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="doc_t4">
+                                <label>T4 - Statement of Remuneration Paid</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="doc_t4a">
+                                <label>T4A - Statement of Pension, Retirement, Annuity</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="doc_t5">
+                                <label>T5 - Statement of Investment Income</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="doc_t3">
+                                <label>T3 - Statement of Trust Income Allocations</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="doc_t2202">
+                                <label>T2202 - Tuition and Enrolment Certificate</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4>Deduction Receipts</h4>
+                        <div class="checkbox-group" style="flex-direction: column; align-items: flex-start;">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="doc_rrsp">
+                                <label>RRSP Contribution Receipts</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="doc_medical">
+                                <label>Medical Expense Receipts</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="doc_donations">
+                                <label>Charitable Donation Receipts</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="doc_childcare">
+                                <label>Childcare Expense Receipts</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="doc_union">
+                                <label>Union/Professional Dues</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4>Supporting Documents</h4>
+                        <div class="checkbox-group" style="flex-direction: column; align-items: flex-start;">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="doc_previous_notice">
+                                <label>Previous Year's Notice of Assessment</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="doc_business">
+                                <label>Business Income/Expense Records</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="doc_investment">
+                                <label>Investment Transaction Records</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="doc_rental">
+                                <label>Rental Income/Expense Records</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="doc_foreign">
+                                <label>Foreign Income/Tax Paid Documents</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="calculation-summary" style="margin-top: 2rem;">
+                    <h4>Important Tax Dates for 2024</h4>
+                    <div class="breakdown-item">
+                        <span>RRSP Contribution Deadline:</span>
+                        <span><strong>March 1, 2025</strong></span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Tax Filing Deadline (Most Canadians):</span>
+                        <span><strong>April 30, 2025</strong></span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Self-Employed Filing Deadline:</span>
+                        <span><strong>June 15, 2025</strong></span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Payment Due Date:</span>
+                        <span><strong>April 30, 2025</strong></span>
+                    </div>
+                </div>
+                
+                <div class="calculation-summary" style="margin-top: 1rem;">
+                    <h4>Document Checklist Progress</h4>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="documentProgress" style="width: 0%"></div>
+                    </div>
+                    <p id="progressText">0 of 15 documents checked off</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="disclaimer">
+        <strong>Disclaimer:</strong> This calculator provides estimates based on 2024 tax rules and should not replace professional tax advice. Tax laws are complex and subject to change. Always consult with a qualified tax professional for your specific situation. The Canada Revenue Agency provides official tax information at canada.ca.
+    </div>
+
+    <script>
+        // Comprehensive 2024 Canadian Tax Data - All 13 Provinces/Territories
+        const TAX_DATA_2024 = {
+            federal: {
+                brackets: [
+                    { min: 0, max: 55867, rate: 0.15 },
+                    { min: 55867, max: 111733, rate: 0.205 },
+                    { min: 111733, max: 173205, rate: 0.26 },
+                    { min: 173205, max: 246752, rate: 0.29 },
+                    { min: 246752, max: Infinity, rate: 0.33 }
+                ],
+                basicPersonalAmount: 15705,
+                rrspLimit: 31560,
+                pensionAmount: 2000
+            },
+            provincial: {
+                ON: {
+                    name: "Ontario",
+                    brackets: [
+                        { min: 0, max: 51446, rate: 0.0505 },
+                        { min: 51446, max: 102894, rate: 0.0915 },
+                        { min: 102894, max: 150000, rate: 0.1116 },
+                        { min: 150000, max: 220000, rate: 0.1216 },
+                        { min: 220000, max: Infinity, rate: 0.1316 }
+                    ],
+                    basicPersonalAmount: 12399,
+                    surtax: { threshold: 4991, rate: 0.20, secondThreshold: 6387, secondRate: 0.36 }
+                },
+                BC: {
+                    name: "British Columbia",
+                    brackets: [
+                        { min: 0, max: 47937, rate: 0.0506 },
+                        { min: 47937, max: 95875, rate: 0.077 },
+                        { min: 95875, max: 110076, rate: 0.105 },
+                        { min: 110076, max: 133664, rate: 0.1229 },
+                        { min: 133664, max: Infinity, rate: 0.147 }
+                    ],
+                    basicPersonalAmount: 12580
+                },
+                AB: {
+                    name: "Alberta",
+                    brackets: [
+                        { min: 0, max: 148269, rate: 0.10 },
+                        { min: 148269, max: 177922, rate: 0.12 },
+                        { min: 177922, max: 237675, rate: 0.13 },
+                        { min: 237675, max: 355513, rate: 0.14 },
+                        { min: 355513, max: Infinity, rate: 0.15 }
+                    ],
+                    basicPersonalAmount: 21003
+                },
+                QC: {
+                    name: "Quebec",
+                    brackets: [
+                        { min: 0, max: 53255, rate: 0.14 },
+                        { min: 53255, max: 106510, rate: 0.19 },
+                        { min: 106510, max: 129590, rate: 0.24 },
+                        { min: 129590, max: Infinity, rate: 0.2575 }
+                    ],
+                    basicPersonalAmount: 18056,
+                    abatement: 0.165
+                },
+                NS: {
+                    name: "Nova Scotia",
+                    brackets: [
+                        { min: 0, max: 29590, rate: 0.0879 },
+                        { min: 29590, max: 59180, rate: 0.1495 },
+                        { min: 59180, max: 93000, rate: 0.1667 },
+                        { min: 93000, max: 150000, rate: 0.175 },
+                        { min: 150000, max: Infinity, rate: 0.21 }
+                    ],
+                    basicPersonalAmount: 11481
+                },
+                NB: {
+                    name: "New Brunswick",
+                    brackets: [
+                        { min: 0, max: 49958, rate: 0.094 },
+                        { min: 49958, max: 99916, rate: 0.14 },
+                        { min: 99916, max: 162383, rate: 0.16 },
+                        { min: 162383, max: 174617, rate: 0.195 },
+                        { min: 174617, max: Infinity, rate: 0.2025 }
+                    ],
+                    basicPersonalAmount: 12458
+                },
+                MB: {
+                    name: "Manitoba",
+                    brackets: [
+                        { min: 0, max: 47000, rate: 0.108 },
+                        { min: 47000, max: 100000, rate: 0.1275 },
+                        { min: 100000, max: Infinity, rate: 0.174 }
+                    ],
+                    basicPersonalAmount: 15000
+                },
+                SK: {
+                    name: "Saskatchewan",
+                    brackets: [
+                        { min: 0, max: 52057, rate: 0.105 },
+                        { min: 52057, max: 148734, rate: 0.125 },
+                        { min: 148734, max: Infinity, rate: 0.145 }
+                    ],
+                    basicPersonalAmount: 16615
+                },
+                PE: {
+                    name: "Prince Edward Island",
+                    brackets: [
+                        { min: 0, max: 32656, rate: 0.098 },
+                        { min: 32656, max: 64313, rate: 0.138 },
+                        { min: 64313, max: Infinity, rate: 0.168 }
+                    ],
+                    basicPersonalAmount: 12000,
+                    surtax: { threshold: 12500, rate: 0.10 }
+                },
+                NL: {
+                    name: "Newfoundland and Labrador",
+                    brackets: [
+                        { min: 0, max: 43198, rate: 0.087 },
+                        { min: 43198, max: 86395, rate: 0.145 },
+                        { min: 86395, max: 154244, rate: 0.158 },
+                        { min: 154244, max: 215943, rate: 0.178 },
+                        { min: 215943, max: Infinity, rate: 0.208 }
+                    ],
+                    basicPersonalAmount: 10382
+                },
+                YT: {
+                    name: "Yukon",
+                    brackets: [
+                        { min: 0, max: 55867, rate: 0.064 },
+                        { min: 55867, max: 111733, rate: 0.09 },
+                        { min: 111733, max: 173205, rate: 0.109 },
+                        { min: 173205, max: 500000, rate: 0.128 },
+                        { min: 500000, max: Infinity, rate: 0.15 }
+                    ],
+                    basicPersonalAmount: 15705
+                },
+                NT: {
+                    name: "Northwest Territories",
+                    brackets: [
+                        { min: 0, max: 50597, rate: 0.059 },
+                        { min: 50597, max: 101199, rate: 0.086 },
+                        { min: 101199, max: 164525, rate: 0.122 },
+                        { min: 164525, max: Infinity, rate: 0.1405 }
+                    ],
+                    basicPersonalAmount: 16593
+                },
+                NU: {
+                    name: "Nunavut",
+                    brackets: [
+                        { min: 0, max: 53268, rate: 0.04 },
+                        { min: 53268, max: 106537, rate: 0.07 },
+                        { min: 106537, max: 173205, rate: 0.09 },
+                        { min: 173205, max: Infinity, rate: 0.115 }
+                    ],
+                    basicPersonalAmount: 19531
+                }
+            },
+            cppEi: {
+                cpp: {
+                    rate: 0.0595,
+                    maxEarnings: 68500,
+                    basicExemption: 3500,
+                    maxContribution: 3867.50
+                },
+                cpp2: {
+                    rate: 0.04,
+                    minEarnings: 68500,
+                    maxEarnings: 73200,
+                    maxContribution: 188.00
+                },
+                ei: {
+                    rate: 0.0229,
+                    maxEarnings: 63300,
+                    maxContribution: 1449.27
+                }
+            },
+            medicalExpense: {
+                threshold: 2759,
+                rate: 0.03
+            },
+            charitableDonations: {
+                firstTierLimit: 200,
+                firstTierRate: 0.15,
+                higherTierRate: 0.29,
+                superHighRate: 0.33,
+                superHighThreshold: 246752,
+                maxPercentage: 0.75
+            },
+            tfsa: {
+                annualLimit2024: 7000,
+                cumulativeLimit2024: 95000
+            },
+            ccb: {
+                maxUnder6: 7997,
+                max6to17: 6748,
+                threshold: 37487,
+                reductionRate1: 0.07,
+                threshold2: 81222,
+                reductionRate2: 0.032,
+                disabilityBenefit: 3322
+            }
+        };
+
+        // Application State with full data persistence
+        let appState = {
+            currentPage: 'dashboard',
+            currentProvince: 'ON',
+            income: {
+                employment: 0,
+                tips: 0,
+                commissions: 0,
+                bonuses: 0,
+                business: 0,
+                professional: 0,
+                businessExpenses: 0,
+                homeOfficeExpenses: 0,
+                interestIncome: 0,
+                eligibleDividends: 0,
+                otherDividends: 0,
+                capitalGains: 0,
+                pension: 0,
+                rrspWithdrawals: 0,
+                ei: 0,
+                other: 0
+            },
+            deductions: {
+                rrsp: 0,
+                union: 0,
+                childcare: 0,
+                employment: 0,
+                medical: 0,
+                donations: 0,
+                tuition: 0,
+                studentLoan: 0,
+                disability: false,
+                age: false,
+                pensionIncome: false,
+                publicTransit: false,
+                other: 0
+            },
+            family: {
+                childrenUnder6: 0,
+                children6to17: 0,
+                disabledChildren: 0,
+                familyIncome: 0,
+                spouseIncome: 0,
+                pensionSplit: 0
+            },
+            investment: {
+                eligibleDividends: 0,
+                otherDividends: 0,
+                foreignDividends: 0,
+                foreignTaxPaid: 0,
+                capitalGains: 0,
+                capitalLosses: 0,
+                carriedLosses: 0,
+                principalResidence: 0,
+                interest: 0,
+                reit: 0,
+                rental: 0,
+                rentalExpenses: 0
+            },
+            scenarios: [],
+            lastCalculation: null
+        };
+
+        // Input validation functions
+        function validateInput(element, min = 0, max = Infinity) {
+            const value = parseFloat(element.value) || 0;
+            const isValid = value >= min && value <= max && !isNaN(value);
+            
+            if (!isValid) {
+                element.classList.add('error');
+                return false;
+            } else {
+                element.classList.remove('error');
+                return true;
+            }
+        }
+
+        function validateAllInputs() {
+            const inputs = document.querySelectorAll('.form-input[type="number"]');
+            let allValid = true;
+            
+            inputs.forEach(input => {
+                const max = input.getAttribute('max') ? parseFloat(input.getAttribute('max')) : Infinity;
+                const min = input.getAttribute('min') ? parseFloat(input.getAttribute('min')) : 0;
+                if (!validateInput(input, min, max)) {
+                    allValid = false;
+                }
+            });
+            
+            return allValid;
+        }
+
+        // Enhanced tax calculation functions
+        function calculateTax(income, province = 'ON', deductions = {}) {
+            const provincialData = TAX_DATA_2024.provincial[province];
+            const federalData = TAX_DATA_2024.federal;
+            
+            // Calculate taxable income
+            const totalDeductions = Object.values(deductions).reduce((sum, val) => {
+                return sum + (typeof val === 'number' ? val : 0);
+            }, 0);
+            
+            const taxableIncome = Math.max(0, income - totalDeductions);
+            
+            // Federal tax calculation
+            const federalTax = calculateFederalTax(taxableIncome);
+            
+            // Provincial tax calculation
+            const provincialTax = calculateProvincialTax(taxableIncome, province);
+            
+            // CPP/EI calculations
+            const cppEi = calculateCppEi(income);
+            
+            // Calculate marginal rates
+            const marginalRates = calculateMarginalRates(taxableIncome, province);
+            
+            const totalTax = federalTax + provincialTax + cppEi.total;
+            const netIncome = income - totalTax;
+            const averageRate = income > 0 ? (totalTax / income) * 100 : 0;
+            
+            return {
+                grossIncome: income,
+                taxableIncome,
+                federalTax,
+                provincialTax,
+                cpp: cppEi.cpp,
+                cpp2: cppEi.cpp2,
+                ei: cppEi.ei,
+                totalCppEi: cppEi.total,
+                totalTax,
+                netIncome,
+                averageRate,
+                marginalRate: marginalRates.combined,
+                federalMarginalRate: marginalRates.federal,
+                provincialMarginalRate: marginalRates.provincial
+            };
+        }
+
+        function calculateFederalTax(income) {
+            const brackets = TAX_DATA_2024.federal.brackets;
+            const basicAmount = TAX_DATA_2024.federal.basicPersonalAmount;
+            const taxableIncome = Math.max(0, income - basicAmount);
+            
+            let tax = 0;
+            for (const bracket of brackets) {
+                if (taxableIncome <= bracket.min) break;
+                
+                const taxableInBracket = Math.min(taxableIncome, bracket.max) - bracket.min;
+                tax += taxableInBracket * bracket.rate;
+            }
+            
+            return Math.round(tax * 100) / 100;
+        }
+
+        function calculateProvincialTax(income, province) {
+            const provincialData = TAX_DATA_2024.provincial[province];
+            if (!provincialData) return 0;
+            
+            const brackets = provincialData.brackets;
+            const basicAmount = provincialData.basicPersonalAmount;
+            const taxableIncome = Math.max(0, income - basicAmount);
+            
+            let tax = 0;
+            for (const bracket of brackets) {
+                if (taxableIncome <= bracket.min) break;
+                
+                const taxableInBracket = Math.min(taxableIncome, bracket.max) - bracket.min;
+                tax += taxableInBracket * bracket.rate;
+            }
+            
+            // Apply surtax if applicable (Ontario, PEI)
+            if (provincialData.surtax && tax > provincialData.surtax.threshold) {
+                const surtaxBase = tax - provincialData.surtax.threshold;
+                tax += surtaxBase * provincialData.surtax.rate;
+                
+                if (provincialData.surtax.secondThreshold && tax > provincialData.surtax.secondThreshold) {
+                    const secondSurtaxBase = tax - provincialData.surtax.secondThreshold;
+                    tax += secondSurtaxBase * provincialData.surtax.secondRate;
+                }
+            }
+            
+            // Apply Quebec abatement for federal calculation
+            if (province === 'QC' && provincialData.abatement) {
+                // This would be applied to federal tax, not provincial
+            }
+            
+            return Math.round(tax * 100) / 100;
+        }
+
+
+        function calculateCppEi(income) {
+            const cppData = TAX_DATA_2024.cppEi.cpp;
+            const cpp2Data = TAX_DATA_2024.cppEi.cpp2;
+            const eiData = TAX_DATA_2024.cppEi.ei;
+            
+            // CPP calculation
+            const cppPensionableEarnings = Math.max(0, Math.min(income, cppData.maxEarnings) - cppData.basicExemption);
+            const cpp = Math.min(cppPensionableEarnings * cppData.rate, cppData.maxContribution);
+            
+            // CPP2 calculation (2024 enhancement)
+            const cpp2PensionableEarnings = Math.max(0, Math.min(income, cpp2Data.maxEarnings) - cpp2Data.minEarnings);
+            const cpp2 = Math.min(cpp2PensionableEarnings * cpp2Data.rate, cpp2Data.maxContribution);
+            
+            // EI calculation
+            const ei = Math.min(income * eiData.rate, eiData.maxContribution);
+            
+            return {
+                cpp: Math.round(cpp * 100) / 100,
+                cpp2: Math.round(cpp2 * 100) / 100,
+                ei: Math.round(ei * 100) / 100,
+                total: Math.round((cpp + cpp2 + ei) * 100) / 100
+            };
+        }
+
+        function calculateMarginalRates(income, province) {
+            const federalRate = getMarginalTaxRate(income, TAX_DATA_2024.federal.brackets, TAX_DATA_2024.federal.basicPersonalAmount);
+            const provincialData = TAX_DATA_2024.provincial[province];
+            const provincialRate = getMarginalTaxRate(income, provincialData.brackets, provincialData.basicPersonalAmount);
+            
+            return {
+                federal: federalRate * 100,
+                provincial: provincialRate * 100,
+                combined: (federalRate + provincialRate) * 100
+            };
+        }
+
+        function getMarginalTaxRate(income, brackets, basicAmount) {
+            const taxableIncome = Math.max(0, income - basicAmount);
+            
+            for (const bracket of brackets) {
+                if (taxableIncome > bracket.min && taxableIncome <= bracket.max) {
+                    return bracket.rate;
+                }
+            }
+            
+            return brackets[brackets.length - 1].rate;
+        }
+
+        // Navigation functions
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            document.getElementById(pageId).classList.add('active');
+            
+            document.querySelectorAll('.nav-pill').forEach(pill => {
+                pill.classList.remove('active');
+            });
+            document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
+            
+            appState.currentPage = pageId;
+            saveAppState();
+        }
+
+        // Event listeners for navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.nav-pill').forEach(pill => {
+                pill.addEventListener('click', (e) => {
+                    const pageId = e.target.getAttribute('data-page');
+                    showPage(pageId);
+                });
+            });
+            
+            // Load saved state
+            loadAppState();
+            
+            // Add real-time validation
+            document.querySelectorAll('.form-input[type="number"]').forEach(input => {
+                input.addEventListener('input', function() {
+                    const max = this.getAttribute('max') ? parseFloat(this.getAttribute('max')) : Infinity;
+                    const min = this.getAttribute('min') ? parseFloat(this.getAttribute('min')) : 0;
+                    validateInput(this, min, max);
+                });
+                
+                input.addEventListener('blur', function() {
+                    if (this.value === '') this.value = '0';
+                });
+            });
+            
+            // Initialize with sample calculation
+            calculateQuickTax();
+            updateDocumentProgress();
+        });
+
+        // Quick tax calculator
+        function calculateQuickTax() {
+            const income = parseFloat(document.getElementById('quickIncome').value) || 0;
+            const province = document.getElementById('quickProvince').value;
+            
+            if (!validateInput(document.getElementById('quickIncome'), 0, 10000000)) {
+                return;
+            }
+            
+            const results = calculateTax(income, province);
+            
+            document.getElementById('grossIncome').textContent = formatCurrency(results.grossIncome);
+            document.getElementById('totalTax').textContent = formatCurrency(results.totalTax);
+            document.getElementById('netIncome').textContent = formatCurrency(results.netIncome);
+            document.getElementById('marginalRate').textContent = results.marginalRate.toFixed(1) + '%';
+            
+            appState.currentProvince = province;
+            appState.lastCalculation = results;
+            saveAppState();
+        }
+
+        // Detailed income calculator
+        function calculateDetailedIncome() {
+            if (!validateAllInputs()) {
+                alert('Please correct the highlighted errors before proceeding.');
+                return;
+            }
+
+            const employment = parseFloat(document.getElementById('employmentIncome').value) || 0;
+            const tips = parseFloat(document.getElementById('tips').value) || 0;
+            const commissions = parseFloat(document.getElementById('commissions').value) || 0;
+            const bonuses = parseFloat(document.getElementById('bonuses').value) || 0;
+            const business = parseFloat(document.getElementById('businessIncome').value) || 0;
+            const professional = parseFloat(document.getElementById('professionalIncome').value) || 0;
+            const businessExpenses = parseFloat(document.getElementById('businessExpenses').value) || 0;
+            const homeOffice = parseFloat(document.getElementById('homeOfficeExpenses').value) || 0;
+            const interest = parseFloat(document.getElementById('interestIncome').value) || 0;
+            const eligibleDividends = parseFloat(document.getElementById('eligibleDividends').value) || 0;
+            const otherDividends = parseFloat(document.getElementById('otherDividends').value) || 0;
+            const capitalGains = parseFloat(document.getElementById('capitalGains').value) || 0;
+            const pension = parseFloat(document.getElementById('pensionIncome').value) || 0;
+            const rrspWithdrawals = parseFloat(document.getElementById('rrspWithdrawals').value) || 0;
+            const ei = parseFloat(document.getElementById('eiBenefits').value) || 0;
+            const other = parseFloat(document.getElementById('otherIncome').value) || 0;
+            
+            const employmentTotal = employment + tips + commissions + bonuses;
+            const selfEmploymentTotal = business + professional - businessExpenses - homeOffice;
+            const investmentTotal = interest + (eligibleDividends * 1.38) + (otherDividends * 1.15) + (capitalGains * 0.5);
+            const otherTotal = pension + rrspWithdrawals + ei + other;
+            
+            const grandTotal = employmentTotal + Math.max(0, selfEmploymentTotal) + investmentTotal + otherTotal;
+
+            // Update Display
+            document.getElementById('employmentTotal').textContent = formatCurrency(employmentTotal);
+            document.getElementById('selfEmploymentTotal').textContent = formatCurrency(Math.max(0, selfEmploymentTotal));
+            document.getElementById('investmentTotal').textContet = formatCurrency(investmentTotal);
+            document.getElementById('otherIncomeTotal').textContent = formatCurrency(otherTotal);
+            document.getElementById('grandTotal').textContent = formatCurrency(grandTotal);
+
+            // update app state
+            appState.income = {
+                employment, tips, commissions, bonuses, business, professional,
+                businessExpenses, homeOfficeExpenses: homeOffice, interestIncome: interest,
+                eligibleDividends, otherDividends, capitalGains, pension,
+                rrspWithdrawals, ei, other
+            };
+
+            // show Results
+            document.getElementById('incomeResults').style.display = 'block';
+            saveAppState();
+        }
+
+        // Deductions calculator
+        function calculateDeductions() {
+            if(!validateAllInputs()) {
+                alert('Please correct the highlighted errors before proceeding.');
+                return;
+            }
+
+            const rrsp = parseFloat(document.getElementById('rrspContributions').value) || 0;
+            const union = parseFloat(document.getElementById('unionDues').value) || 0;
+            const childcare = parseFloat(document.getElementById('childcareExpenses').value) || 0;
+            const employment= parseFloat(document.getElementById('employmentExpenses').value) || 0;
+            const medical = parseFloat(document.getElementById('medicalExpenses').value) || 0;
+            const donations = parseFloat(document.getElementById('charitableDonations').value) || 0;
+            const tuition = parseFloat(document.getElementById('tuitionFees').value) || 0;
+            const studentLoan = parseFloat(document.getElementById('studentLoanInterest').value) || 0;
+            const other = parseFloat(document.getElementById('otherCredits').value) || 0;
+
+            // Get checkbox values
+            const disability =  document.getElementById('disabilityCredit').checked;
+            const age = document.getElementById('ageAmount').checked;
+            const pensionIncome = document.getElementById('pensionIncomeAmount').checked;
+            const publicTransit = document.getElementById('publicTransitCredit').checked;
+
+            // Calculate medical expense credit (threshold : 3% of income or $2,759)
+            const totalIncome  = getTotalIncome();
+            const medicalThreshold = Math.min(totalIncome * 0.03, TAX_DATA_2024.medicalExpense.threshold);
+            const medicalCredit = Math.max(0, medical - medicalThreshold);
+
+            // Calculate charitable donation credit
+            const donationCredit = calculateCharitableCredit(donations, totalIncome);
+
+            // Calculate other credits
+            let creditAmount = 0;
+            if (disability) creditAmount += 9428; //2024 disability Amount
+            if (age) creditAmount += 8790; //2024 age amount
+            if (pensionIncome) creditAmount += 2000; //2k24 pension amount
+            if (publicTransit) creditAmount += 500; //Estimated
+
+            const totalDeductions = rrsp + union + childcare + employment;
+            const totalCredits = medicalCredit + donationCredit + tuition + studentLoan + creditAmount + other;
+
+            // Update app State
+            appState.deducitons = {
+                rrsp, union, childcare, employment, medical, donations, 
+                tuition, studentLoan, disability, age, pensionIncome, 
+                publicTransit, other
+            };
+
+            // Display results
+            displayDeductionsResults(totalDeductions, totalCredits, medicalCredit, donationCredit);
+            saveAppState();
+        }
+
+        function calculateCharitableCredit(donations, income) {
+            if(donations <= 0) return 0;
+            
+            const maxDonations = income * TAX_DATA_2024.charitableDonations.maxPercentage;
+            const eligibleDonations = Math.min(donations, maxDonations);
+
+            const firstTierAmount = Math.min(eligibleDonations, TAX_DATA_2024.charitableDonations.firstTierLimit);
+            const higherTierAmount = Math.min(0, eligibleDonations - TAX_DATA_2024.charitableDonations.firstTierLimit);
+
+            // check if eligible for super high rate (income > $246752)
+            const superHighAmount = income > TAX_DATA_2024.charitableDonations.superHighThreshold ?
+                Math.min(higherTierAmount, eligibleDonations - TAX_DATA_2024.charitableDonations.firstTierLimit) : 0;
+            const credit = firstTierAmount * TAX_DATA_2024.charitableDonations.firstTierRate +
+                        regularHighAmount * TAX_DATA_2024.charitableDonations.higherTierRate +
+                        superHighAmount * TAX_DATA_2024.charitableDonations.superHighRate;
+
+            return Math.round(credit * 100) / 100;
+        }
+
+        function displayDeductionsResults(deductions, credits, medicalCredit, donationCredit) {
+            const breakdown = document.getElementById('deductionsBreakdown');
+            breakdown.innerHTML = `
+                <div class="breakdown-item">
+                    <span>Total Deductions (reduce taxable income):</span>
+                    <span>${formatCurrency(deductions)}</span>
+                </div>
+                <div class="breakdown-item">
+                    <span>Medical Expense Credit:</span>
+                    <span>${formatCurrency(medicalCredit)}</span>
+                </div>
+                <div class="breakdown-item">
+                    <span>Charitable Donation Credit:</span>
+                    <span>${formatCurrency(donationCredit)}</span>
+                </div>
+                <div class="breakdown-item">
+                    <span>Total Tax Credits:</span>
+                    <span>${formatCurrency(credits)}</span>
+                </div>
+            `;
+
+            document.getElementById('deductionsResults').style.display = 'block';
+        }
+
+        // RRSP/TFSA CAlculator
+        function calculateRrspTfsa() {
+            if(!validateAllInputs()) {
+                alert('Please correct the highlighted errors before proceeding.');
+                return;
+            }
+
+            const prevIncome = parseFloat(document.getElementById('prevYearIncome').value) || 0;
+            const pensionAdj = parseFloat(document.getElementById('pensionAdjustment').value) || 0;
+            const unusedRoom = parseFloat(document.getElementById('unusedRrspRoom').value) || 0;
+            const currentRate = parseFloat(document.getElementById('currentMarginalRate').value) || 0;
+            
+            // Calculate RRSP room
+            const rrspRoom = Math.min(prevIncome * 0.18, TAX_DATA_2024.federal.rrspLimit) - pensionAdj + unusedRoom;
+            document.getElementById('rrspRoom').querySelector('.result-value').textContent = formatCurrency(Math.max(0, rrspRoom));
+
+            // Calculate TFSA room
+            const age18Year = parseInt(document.getElementById('ageAt18').value) || 2000;
+            const prevContributions = parseFloat(document.getElementById('prevTfsaContributions').value) || 0;
+            const Withdrawals = parseFloat(document.getElementById('tfsaWithdrawals').value) || 0;
+            const retirementRate = parseFloat(document.getElementById('retirementMarginalRate').value) || 20;
+
+            const tfsaRoom = calculateTfsaRoom(age18Year, prevContributions, Withdrawals);
+            document.getElementById('tfsaRoom').querySelector('.result-value').textContent = formatCurrency(Math.max(0, tfsaRoom));
+
+            // Generate optimization advice
+            const advice = generateRrspTfsaAdvice(rrspRoom, tfsaRoom, currentRate, retirementRate);
+            document.getElementById('optimizationAdvice').innerHTML = advice.text;
+            document.getElementById('recommendedRrsp').textContet = formatCurrency(advice.rrspRecommendation);            
+            document.getElementById('recommendedTfsa').textContet = formatCurrency(advice.tfsRecommendation);
+            document.getElementById('taxSavings').textContent = formatCurrency(advice.taxSavings);
+
+            document.getElementById('rrspOptimization').style.display = 'block';
+        }   
+
+        function calculateTfsaRoom(age18Year, contributions, withdrawals) {
+            const currentYear = 2024;
+            const tfsaStartYear = Math.max(age18Year, 2009);
+
+            // TFSA annual Limits by year
+            const annualLimits = {
+                2009: 5000, 2010: 5000, 2011: 5000, 2012: 5000,
+                2013: 5500, 2014: 5500, 2015: 10000, 2016: 5500,
+                2017: 5500, 2018: 5500, 2019: 6000, 2020: 6000,
+                2021: 6000, 2022: 6000, 2023: 6500, 2024: 7000
+            };
+            
+            let totalRoom = 0;
+            for (let year = tfsaStartYear; year <= currentYear; year++) {
+                totalRoom += annualLimits[year] || 7000;
+            }
+
+            return totalRoom - contributions + withdrawals;
+        }
+
+        function generateRrspTfsaAdvice(rrspRoom, tfsaRoom, currentRate, retirementRate) {
+            let advice = '';
+            let rrspRecommendation = 0;
+            let tfsaRecommendation = 0;
+            let taxSavings = 0;
+            
+            if (currentRate > retirementRate + 5) {
+                advice = `<p><strong>Recommendation: Prioritize RRSP</strong></p>
+                         <p>Your current marginal tax rate (${currentRate}%) is significantly higher than your expected retirement rate (${retirementRate}%). 
+                         Maximize RRSP contributions first to reduce current taxes.</p>`;
+                rrspRecommendation = Math.min(rrspRoom, 31560);
+                tfsaRecommendation = Math.min(tfsaRoom, 7000);
+            } else if (retirementRate > currentRate + 5) {
+                advice = `<p><strong>Recommendation: Prioritize TFSA</strong></p>
+                         <p>Your expected retirement tax rate (${retirementRate}%) is higher than your current rate (${currentRate}%). 
+                         Consider maximizing TFSA contributions for tax-free growth.</p>`;
+                tfsaRecommendation = Math.min(tfsaRoom, 7000);
+                rrspRecommendation = Math.min(rrspRoom, 20000);
+            } else {
+                advice = `<p><strong>Recommendation: Balanced Approach</strong></p>
+                         <p>Your current and expected retirement tax rates are similar. Consider a balanced approach 
+                         between RRSP and TFSA based on your liquidity needs.</p>`;
+                rrspRecommendation = Math.min(rrspRoom, 15000);
+                tfsaRecommendation = Math.min(tfsaRoom, 7000);
+            }
+            
+            taxSavings = rrspRecommendation * (currentRate / 100);
+            
+            return {
+                text: advice,
+                rrspRecommendation,
+                tfsaRecommendation,
+                taxSavings
+            };
+        }
+
+        // Investment Tax Calculator
+        function calculateInvestmentTax() {
+            if (!validateAllInputs()) {
+                alert('Please correct the highlighted errors before proceeding.');
+                return;
+            }
+
+            const eligibleDivs = parseFloat(document.getElementById('eligibleDivs').value) || 0;
+            const otherCanadianDivs = parseFloat(document.getElementById('otherCanadianDividends').value) || 0;
+            const foreignDivs = parseFloat(document.getElementById('foreignDividends').value) || 0;
+            const foreignTax = parseFloat(document.getElementById('foreignTaxPaid').value) || 0;
+            const capGains = parseFloat(document.getElementById('capGains').value) || 0;
+            const capLosses = parseFloat(document.getElementById('capLosses').value) || 0;
+            const carriedLosses = parseFloat(document.getElementById('carriedLosses').value) || 0;
+            const principalResidence = parseFloat(document.getElementById('principalResidenceGain').value) || 0;
+            const interest = parseFloat(document.getElementById('investmentInterest').value) || 0;
+            const reit = parseFloat(document.getElementById('reitDistributions').value) || 0;
+            const rental = parseFloat(document.getElementById('rentalIncome').value) || 0;
+            const rentalExpenses = parseFloat(document.getElementById('rentalExpenses').value) || 0;
+
+            // Calculate grossed-up dividends
+            const grossedUpEligible = eligibleDivs * 1.38; //38% gross-up
+            const grossedUpOther = otherCanadianDivs * 1.15; //15% gross-up
+            const totalGrossedUp = grossedUpEligible + grossedUpOther;
+
+            // Calculate dividend tax credits
+            const eligibleCredit = grossedUpEligible * 0.2575; //25.75% federal credit
+            const otherCredit = grossedUpOther * 0.1003; //10.03% federal credit
+            const totalDividendCredit = eligibleCredit + otherCredit;
+
+            // Calculate Taxable capital gains
+            const netCapitalGains = Math.max(0, capGains - capLosses - carriedLosses);
+            const taxableCapitalGains = netCapitalGains * 0.5; //50% inclusion rate
+
+            // Foreign Tax credit (simplified) 
+            const foreignTaxCredit = Math.min(foreignTax, foreignDivs * 0.15);
+
+            // Net rental Income
+            const netRental = Math.max(0, rental - rentalExpenses);
+
+            // Total taxable investment income
+            const totalTaxableInvestment = totalGrossedUp + taxableCapitalGains + interest + reit + netRental + foreignDivs;
+
+            // Update app state
+            appState.investment = {
+                eligibleDividends: eligibleDivs,
+                otherDividends: otherCanadianDivs,
+                foreignDividends: foreignDivs,
+                foreignTaxPaid: foreignTax,
+                capitalGains: capGains,
+                capitalLosses: capLosses,
+                carriedLosses,
+                principalResidence,
+                interest,
+                reit,
+                rental,
+                rentalExpenses
+            };
+
+            // Display results
+            document.getElementById('grossedUpDividends').textContent = formatCurrency(totalGrossedUp);
+            document.getElementById('taxableCapitalGains').textContent = formatCurrency(taxableCapitalGains);
+            document.getElementById('dividendTaxCredit').textContent = formatCurrency(totalDividendCredit);
+            document.getElementById('foreignTaxCredit').textContent = formatCurrency(foreignTaxCredit);
+
+            displayInvestmentBreakdown(totalTaxableInvestment, interest, netRental, reit);
+            document.getElementById('investmentResults').style.display= 'block';
+            saveAppState();
+        }
+
+        function displayInvestmentBreakdown(total, interest, rental, reit) {
+            const breakdown = document.getElementById('investmentBreakdown');
+            breakdown.innerHTML = `
+                <div class="breakdown-item">
+                    <span>Interest Income (Fully Taxable):</span>
+                    <span>${formatCurrency(interest)}</span>
+                </div>
+                <div class="breakdown-item">
+                    <span>Net Rental Income:</span>
+                    <span>${formatCurrency(rental)}</span>
+                </div>
+                <div class="breakdown-item">
+                    <span>REIT Distributions:</span>
+                    <span>${formatCurrency(reit)}</span>
+                </div>                 
+                <div class="breakdown-item">
+                    <span><strong>Total Taxable Investment Income:</strong></span>
+                    <span><strong>${formatCurrency(total)}</strong></span>
+                </div>
+                `;
+        }
+
+        // Family Benefits Calculator
+        function calculateFamilyBenefits() {
+            if(!validateAllInputs()) {
+                alert('Please correct the highlighted errors before proceeding.');
+                return;
+            }
+
+            const childrenUnder6 = parseInt(document.getElementById('childrenUnder6').value) || 0;
+            const children6to17 = parseInt(document.getElementById('children6to17').value) || 0;
+            const familyIncome = parseFloat(document.getElementById('familyIncome').value) || 0;
+            const disabledChildren = parseInt(document.getElementById('disabledChildren').value) || 0;
+            const primaryIncome = parseFloat(document.getElementById('primaryIncome').value) || 0;
+            const spouseIncome = parseFloat(document.getElementById('spouseIncome').value) || 0;
+            const eligiblePension = parseFloat(document.getElementById('eligiblePension').value) || 0;
+            const splitPercentage = parseFloat(document.getElementById('splitPercentage').value) || 0;
+
+            // calculate canada child benefit
+            const cbb = calculateCBB(childrenUnder6, children6to17, familyIncome);
+
+            // calculate chlid disabliity benefit
+            const cdb = disabledChildren * TAX_DATA_2024.cbb.disabilityBenefit;
+
+            // calculate pension splitting savings
+            const pensionSplitSavings = calculatePensionSplitSavings(primaryIncome, spouseIncome, eligiblePension, splitPercentage);
+
+            // calculate provincial benefits ( simplified) 
+            const provincialBenefits = calculateProvincialFamilyBenfits(childrenUnder6 + children6to17, familyIncome, appState.currentProvince);
+
+            // Update app State
+            appState.family = {
+                childrenUnder6,
+                children6to17,
+                disabledChildren,
+                familyIncome,
+                spouseIncome: spouseIncome,
+                pensionSplit: splitPercentage
+            };
+
+            // Display results
+            document.getElementById('ccbAmount').textContent = formatCurrency(ccb);
+            document.getElementById('childDisabilityBenefit').textContent = formatCurrency(cdb);
+            document.getElementById('pensionSplitSavings').textContent = formatCurrency(pensionSplitSavings);
+            document.getElementById('provincialBenefits').textContent = formatCurrency(provincialBenefits);
+
+            displayFamilyBreakdown(ccb, cdb, provincialBenefits);
+            document.getElementById('familyResults').style.display = 'block';
+            saveAppState();
+        }
+
+        function calculateCCB(under6, over6, familyIncome) {
+            const maxUnder6 = TAX_DATA_2024.ccb.maxUnder6;
+            const max6to17 = TAX_DATA_2024.ccb.max6to17;
+            const threshold = TAX_DATA_2024.ccb.threshold;
+
+            const maxBeneft = (under6 * maxUnder6) + (over6 * max6to17);
+
+            if(familyIncome <= threshold) {
+                return maxBeneft;
+            }
+
+            // Simplified reduction calculation
+            const totalChildren = under6 + over6;
+            const reductionRate = totalChildren === 1 ? 0.07 : (totalChildren === 2 ? 0.135 : 0.20);
+            const reduction = (familyIncome - threshold) * reductionRate;
+
+            return Math.max(0, maxBeneft - reduction);
+        }
+
+        function calculatePensionSplitSavings(income1, income2, pensionAmount, splitPercentage) {
+            if (pensionAmount === 0 || splitPercentage === 0) return 0;
+
+            const splitAmount = pensionAmount * (splitPercentage / 100);
+
+            // Calculate original tax
+            const originalTax1 = calculateTax(income1, appState.currentProvince).totalTax;
+            const originalTax2 = calculateTax(income2 + splitAmount, appState.currentProvince).totalTax;
+            const newTotal = newTax1 + newTax2;
+
+            return Math.max(0, originalTota - newTotal);
+        }
+
+        function calculateProvincialFamilyBenfits(children, income, province) {
+            // simplified provincial benefit calculation
+            const benefits = {
+                BC: children * 1600 * Math.max(0, 1 - income / 100000),
+                AB: children * 1200 * Math.max(0, 1 - income / 80000),
+                ON: children * 1400 * Math.max(0, 1 - income / 90000),
+                QC: children * 2400 * Math.max(0, 1 - income / 75000)
+            };
+
+            return Math.round((benfits[province] || 0) * 100) / 100;
+        }
+
+        function displayFamilyBreakdown(ccb, cdb, provincial) {
+            const breakdown = document.getElementById('familyBreakdown');
+            breakdown.innerHTML = `
+                <div class="breakdown-item">
+                    <span>Monthly CCB Payment:</span>
+                    <span>${formatCurrency(ccb / 12)}</span>
+                </div>
+                <div class="breakdown-item">
+                    <span>Total Annual Family Benefits:</span>
+                    <span><strong>${formatCurrency(ccb + cdb + provincial)}</strong></span>
+                </div>
+            `;
+        }
+    
+        // Scenario Comparison
+        function compareScenarios() {
+            if (!validateAllInputs()) {
+                alert('Please correct the highlighted errors before proceeding.');
+                return;
+            }
+            
+            const scenario1Income = parseFloat(document.getElementById('scenario1Income').value) || 0;
+            const scenario1Rrsp = parseFloat(document.getElementById('scenario1Rrsp').value) || 0;
+            const scenario1Tfsa = parseFloat(document.getElementById('scenario1Tfsa').value) || 0;
+            const scenario1Donations = parseFloat(document.getElementById('scenario1Donations').value) || 0;
+            
+            const scenario2Income = parseFloat(document.getElementById('scenario2Income').value) || 0;
+            const scenario2Rrsp = parseFloat(document.getElementById('scenario2Rrsp').value) || 0;
+            const scenario2Tfsa = parseFloat(document.getElementById('scenario2Tfsa').value) || 0;
+            const scenario2Donations = parseFloat(document.getElementById('scenario2Donations').value) || 0;
+            
+            const incomeGrowth = parseFloat(document.getElementById('incomeGrowth').value) || 3;
+            const planningYears = parseInt(document.getElementById('planningYears').value) || 5;
+            const inflation = parseFloat(document.getElementById('inflation').value) || 2.5;
+            const investmentReturn = parseFloat(document.getElementById('investmentReturn').value) || 7;
+            
+            // Calculate current scenarios
+            const deductions1 = { rrsp: scenario1Rrsp, donations: scenario1Donations };
+            const deductions2 = { rrsp: scenario2Rrsp, donations: scenario2Donations };
+            
+            const results1 = calculateTax(scenario1Income, appState.currentProvince, deductions1);
+            const results2 = calculateTax(scenario2Income, appState.currentProvince, deductions2);
+            
+            const comparison = [
+                {
+                    metric: 'Gross Income',
+                    scenario1: formatCurrency(results1.grossIncome),
+                    scenario2: formatCurrency(results2.grossIncome),
+                    difference: formatCurrency(results2.grossIncome - results1.grossIncome),
+                    improvement: formatPercentage((results2.grossIncome - results1.grossIncome) / results1.grossIncome * 100)
+                },
+                {
+                    metric: 'Taxable Income',
+                    scenario1: formatCurrency(results1.taxableIncome),
+                    scenario2: formatCurrency(results2.taxableIncome),
+                    difference: formatCurrency(results2.taxableIncome - results1.taxableIncome),
+                    improvement: formatPercentage((results2.taxableIncome - results1.taxableIncome) / results1.taxableIncome * 100)
+                },
+                {
+                    metric: 'Total Tax',
+                    scenario1: formatCurrency(results1.totalTax),
+                    scenario2: formatCurrency(results2.totalTax),
+                    difference: formatCurrency(results2.totalTax - results1.totalTax),
+                    improvement: formatPercentage((results1.totalTax - results2.totalTax) / results1.totalTax * 100)
+                },
+                {
+                    metric: 'Net Income',
+                    scenario1: formatCurrency(results1.netIncome),
+                    scenario2: formatCurrency(results2.netIncome),
+                    difference: formatCurrency(results2.netIncome - results1.netIncome),
+                    improvement: formatPercentage((results2.netIncome - results1.netIncome) / results1.netIncome * 100)
+                },
+                {
+                    metric: 'Marginal Tax Rate',
+                    scenario1: results1.marginalRate.toFixed(1) + '%',
+                    scenario2: results2.marginalRate.toFixed(1) + '%',
+                    difference: (results2.marginalRate - results1.marginalRate).toFixed(1) + '%',
+                    improvement: ''
+                }
+            ];
+
+            // populate comparison table
+            const tableBody = document.getElementById('comparisonTableBody');
+            tableBody.innerHTML = '';
+
+            comparison.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML =  `
+                    <td><strong>${row.metric}</strong><td>
+                    <td>${row.scenario1}</td>
+                    <td>${row.scenario2}</td>
+                    <td>${row.difference}</td>
+                    <td>${row.improvement}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            // calculate multi-year projections
+            const projectedSavings = calculateMultiYearSavings(results1, results2, planningYears, incomeGrowth);
+            const projectedWealth = calculateProjectedWealth(scenario2Rrsp + scenario2Tfsa, planningYears, investmentReturn);
+
+            document.getElementById('projectedSavings').textContent = formatCurrency(projectedSavings);
+            document.getElementById('projectedWealth').textContent = formatCurrency(projectedWealth);
+
+            document.getElementById('scenarioComparison').style.display = 'block';
+        }
+
+        function calculateMultiYearSavings(results1, results2, years, growthRate) {
+            let totalSavings = 0;
+            let income1 = results1.grossIncome;
+            let income2 = results2.grossIncome;
+
+            for(let year = 1; year <= years; year++) {
+                income1 *= (1 + growthRate / 100);
+                income2 *= (1 + growthRate / 100);
+
+                const yearResults1 = calculateTax(income1, appState.currentProvince);
+                const yearResults2 = calcualteTax(income2, appSate.currentProvince);
+
+                totalSavings += (yearResults1.totalTax - yearResults2.totalTax);
+            }
+            return totalSavings;
+        }
+
+        function calculateProjectedWealth(annualContribution, years, returnRate) {
+            const monthlyContribution = annualContribution / 12;
+            const monthlyRate  = returnRate / 100 / 12;
+            const totalMonths = years * 12;
+
+            // Future value of annuity formula
+            const featureValue = monthlyContribution * (((1 + monthlyRate) ** totalMonths - 1) / monthlyRate);
+            return futureValue;
+        }
+
+        // Data Persistence functions
+        function saveAppState() {
+            try {
+                const stateToSave = JSON.stringify(appState);
+                // using a simple vairable since localstorage is not available
+                window.taxCalculatorState = stateToSave;
+            } catch(error) {
+                console.warn('Could not save application state:', error);
+            }
+        }
+
+        function loadAppState() {
+            try {
+                if(window.taxCalculatorState) {
+                    const savedState = JSON.parse(window.taxCalculatorState);
+                    appState = { ...appState, ...savedState};
+
+                    // restore form values
+                    restoreFormValues();
+                }
+            } catch(error) {
+                console.warn('Could not load application state:', error);
+            }
+        }
+
+        function restoreFormValues() {
+            // restore quick calculator
+            if (appState.income.employment) {
+                document.getElementById('quickIncome').value = appState.income.employment;
+            }
+            if (appState.currentProvince) {
+                document.getElementById('quickProvince').value = appState.currentProvince;
+            }
+
+            // Restore other form values as needed
+            Object.keys(appState.income).forEach(key => {
+                const element = document.getElementById(key + 'Income') || document.getElementById(key);
+                if (element && appState.income[key]) {
+                    element.value = appState.income[key];
+                }
+            });
+        }
+
+        // Scenario Saving functions
+        function saveScenario() {
+            const scenarioName = document.getElementById('scenarioName').value.trim();
+            if(!scenarioName) {
+                alert('Please enter a name for this scenario');
+                return;
+            }
+
+            const scenario = {
+                name: scenarioName,
+                date: new Date().toLocaleDateString,
+                income: getTotalIncome(),
+                province: appState.currentProvince,
+                results: appState.lastCalculation,
+                data: { ...appState}
+            };
+
+            appState.scenarios.push(scenario);
+            saveAppState();
+            updateSavedScenariosList();
+            document.getElementById('scenarioName').value = '';
+
+            alert(`Scenario "${scenarioName}" saved successfully!`);
+        }
+
+        function updateSavedScenariosList() {
+            const list = document.getElementById('savedScenariosList');
+            if (!list) return;
+
+            if (appState.scenarios.length === 0) {
+                list.innerHTML = '<p>No saved scenarios yet.</p>';
+                return;
+            }
+
+            list.innerHTML = appState.scenarios.map((scenario, index) => `
+                <div class="scenario-item">
+                    <div>
+                        <strong>${scenario.name}</strong><br>
+                        <small>${scenario.date} - ${formatCurrency(scenario.income)} (${scenario.province})</small>
+                    </div>
+                    <div>
+                        <button class="btn btn-secondary" onclick="loadScenario(${index})">Load</button>
+                        <button class="btn btn-secondary" onclick="deleteScenario(${index})" style="background: var(--error-red);">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadScenario(index) {
+            if (index >= 0 && index < appState.scenarios.length) {
+                const scenario = appState.scenarios[index];
+                appState = { ...appState, ...scenario.data};
+                restoreFormValues();
+                calculateQuickTax();
+                alert(`Scenario "${scenario.name}" loaded successfully!`);
+            }
+        }
+
+        function deleteScenario(index) {
+            if (index >= 0 && index < appState.scenarios.length) {
+                const scenario = appState.scenarios[index];
+                if (confirm(`Are you sure you want to delete "${scenario.name}"?`)) {
+                    appState.scenarios.splice(index, 1);
+                    saveAppState();
+                    updateSavedScenariosList();
+                }
+            }
+        }
+
+        // Document checklist functions
+        function updateDocumentProgress() {
+            const checkboxes = document.querySelectorAll('#documents input[type="checkbox"]');
+            const checkedBoxes = document.querySelectorAll('#documents input[type="checkbox"]:checked');
+
+            const progress = (checkedBoxes.length / checkboxes.length) * 100;
+            document.getElementById('documentProgress').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `${checkedBoxes.length} of ${checkboxes.length} documents checked off`;
+
+            // Add event listeners if not already added
+            checkboxes.forEach(checkbox => {
+                checkbox.removeEventListener('change', updateDocumentProgress);
+                checkbox.addEventListener('change', updateDocumentProgress);
+            });
+        }
+
+        // print and export functions
+        function generatePrintReport() {
+            document.getElementById('reportDate').textContent = new Date().toLocalDateString('en-CA');
+
+            // Update final results for print
+            updateFinalResults();
+
+            // Generate optimization suggestions
+            generateOptimizationSuggestions();
+
+            window.print();
+        }
+
+        function exportResults() {
+            const data = {
+                calculationDate: new Date().toISOString(),
+                province: appState.currentProvince,
+                totalIncome: getTotalIncome(),
+                results: appState.lastCalculation,
+                scenarios: appState.scenarios,
+                appState: appState
+            };
+
+            const jsonString = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `tax-calculation-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+
+        function updateFinalResults() {
+            const totalIncome = getTotalIncome();
+            const results = calculateTax(totalIncome, appState.currentProvince, appState.deductions);
+
+            document.getElementById('finalGrossIncome').textContent = formatCurrency(results.grossIncome);
+            document.getElementById('finalFederalTax').textContent = formatCurrency(results.federalTax);
+            document.getElementById('finalProvincialTax').textContent = formatCurrency(results.provincialTax);
+            document.getElementById('finalCppEi').textContent = formatCurrency(results.totalCppEi);
+            document.getElementById('finalTotalTax').textContent = formatCurrency(results.totalTax);
+            document.getElementById('finalNetIncome').textContent = formatCurrency(results.netIncome);
+            document.getElementById('finalAverageRate').textContent = results.averageRate.toFixed(1) + '%';
+            document.getElementById('finalMarginalRate').textContent = results.marginalRate.toFixed(1) + '%';
+            
+            // update tax breakdown
+            updateTaxBreakdown(results);
+
+            // Update tax bracket visualization
+            updateTaxBracketVisualization(results.taxableIncome);
+        }
+
+        function updateTaxBreakdown(results) {
+            const breakdown = document.getElementById('taxBreakdownList');
+            breakdown.innerHTML = `
+                <div class="breakdown-item">
+                    <span>Gross Income:</span>
+                    <span>${formatCurrency(results.grossIncome)}</span>
+                </div>
+                <div class="breakdown-item">
+                    <span>Less: Deductions</span>
+                    <span>${formatCurrency(results.grossIncome - results.taxableIncome)}</span>
+                </div>
+                <div class="breakdown-item">
+                    <span>Taxable Income:</span>
+                    <span>${formatCurrency(results.taxableIncome)}</span>
+                </div>
+                <div class="breakdown-item">
+                    <span>Federal Tax:</span>
+                    <span>${formatCurrency(results.federalTax)}</span>
+                </div>
+                <div class="breakdown-item">
+                    <span>Provincial Tax (${TAX_DATA_2024.provincial[appState.currentProvince].name}):</span>
+                    <span>${formatCurrency(results.provincialTax)}</span>
+                </div>
+                <div class="breakdown-item">
+                    <span>CPP Contributions:</span>
+                    <span>${formatCurrency(results.cpp + results.cpp2)}</span>
+                </div>
+                <div class="breakdown-item">
+                    <span>EI Premiums:</span>
+                    <span>${formatCurrency(results.ei)}</span>
+                </div>
+                <div class="breakdown-item">
+                    <span><strong>Total Tax & Deductions:</strong></span>
+                    <span><strong>${formatCurrency(results.totalTax)}</strong></span>
+                </div>
+            `;
+        }
+
+        function updateTaxBracketVisualization(taxableIncome) {
+            const brackets = TAX_DATA_2024.federal.brackets;
+            const bracketBar = document.getElementById('taxBracketBar');
+            const legend = document.getElementById('bracketLegend');
+
+            let html = '';
+            let legendHtml = '<div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.5rem;">';
+
+            brackets.forEach((bracket, index) => {
+                const width = Math.min(taxableIncome, bracket.max) > bracket.min ? 
+                    Math.min(20, ((Math.min(taxableIncome, bracket.max) - bracket.min) / taxableIncome) * 100) : 0;
+                
+                if (width > 0) {
+                    const className = `bracket-${bracket.rate.toString().replace('.','')}`;
+                    html += `<div class="bracket-segment ${className}" style="width: ${width}%">${(bracket.rate * 100).toFixed(1)}%</div>`;
+
+                    legendHtml += `<div style="display: flex; align-items: center; gap: 0.25rem;">
+                        <div style="width: 20px; height: 20px; background: var(--bracket-${bracket.rate.toString().replace('.', '')});" class="${className}"></div>
+                        <span>${(bracket.rate * 100).toFixed(1)}% (${formatCurrency(bracket.min)} - ${bracket.max === Infinity ? '∞' : formatCurrency(bracket.max)})</span>
+                    </div>`;
+                }
+            });
+
+            legendHtml += '</div>';
+            bracketBar.innerHTML = html;
+            legend.innerHTML = legendHtml;
+        }
+
+        function generateOptimizationSuggestions() {
+            const suggestions = [];
+            const totalIncome = getTotalIncome();
+            const results = calculateTax(totalIncome, appState.currentProvince, appState.deductions);
+            
+            // RRSP suggestions
+            if (appState.deductions.rrsp < 20000) {
+                const additionalRrsp = Math.min(10000, 31560 - appState.deductions.rrsp);
+                const taxSavings = additionalRrsp * (results.marginalRate / 100);
+                suggestions.push(`Consider increasing RRSP contributions by ${formatCurrency(additionalRrsp)} to save approximately ${formatCurrency(taxSavings)} in taxes.`);
+            }
+            
+            // Medical expenses suggestion
+            if (appState.deductions.medical > 0 && appState.deductions.medical < totalIncome * 0.03) {
+                suggestions.push(`Your medical expenses don't exceed the threshold. Consider combining with spouse's expenses or timing expenses strategically.`);
+            }
+            
+            // Charitable donations suggestion
+            if (appState.deductions.donations > 0 && appState.deductions.donations < 200) {
+                suggestions.push(`Consider combining charitable donations to exceed $200 for higher tax credit rates (29% vs 15%).`);
+            }
+            
+            // High income suggestions
+            if (results.marginalRate > 40) {
+                suggestions.push(`With a high marginal rate (${results.marginalRate.toFixed(1)}%), consider income splitting strategies or pension splitting if eligible.`);
+            }
+            
+            // Investment income suggestions
+            if (appState.investment.interest > 5000) {
+                suggestions.push(`Consider moving interest-bearing investments to RRSP/TFSA to reduce taxable income.`);
+            }
+            
+            const suggestionsList = document.getElementById('suggestionsList');
+            if (suggestions.length > 0) {
+                suggestionsList.innerHTML = suggestions.map(s => `<div class="breakdown-item"><span>${s}</span></div>`).join('');
+            } else {
+                suggestionsList.innerHTML = '<div class="breakdown-item"><span>Your tax strategy appears well-optimized! Consider consulting a tax professional for advanced strategies.</span></div>';
+            }
+        }
+
+        // utility functions
+        function getTotalIncome() {
+            return Object.values(appState.income).reduce((sum, val) => {
+                return sum + (typeof val === 'number' ? val : 0);
+            }, 0);
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-CA', {
+                style: 'currency',
+                currency: 'CAD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(Math.round(amount || 0));
+        }
+
+        function formatPercentage(percentage) {
+            if (isNaN(percentage) || !isFinite(percentage)) return '0.0%';
+            return (percentage >= 0 ? '+' : '') + percentage.toFixed(1) + '%';
+        }
+
+        // initialize application
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // initalize all event listeners
+            setupEventListeners();
+
+            // load saved state
+            loadAppState();
+
+            // initialize with sample calculation
+            calculateQuickTax();
+
+            // update document progress
+            updateDocumentProgress();
+
+            // update saved scenarios list
+            updateSavedScenariosList();
+        });
+
+        function setupEventListeners() {
+            // navigation
+            document.querySelectorAll('.nav-pills').forEach(pill => {
+                pill.addEventListener('click', (e) => {
+                    const pageId = e.target.getAttribute('data-page');
+                    showPage(pageId);
+                });
+            });
+
+            // Real-time validation and calculations
+            document.querySelectorAll('.form-input[type="number"]').forEach(input => {
+                input.addEventListener('input', function() {
+                    const max = this.getAttribute('max') ? parseFloat(this.getAttribute('max')) : Infinity;
+                    const min = this.getAttribute('min') ? parseFloat(this.getAttribute('min')) : 0;
+                    validateInput(this, min, max);
+                    
+                    // Auto calculate for quick calculator
+                    if (this.id === 'quickIncome') {
+                        setTimeout(calculateQuickTax, 300);
+                    }
+                });
+
+                input.addEventListener('blur', function() {
+                    if(this.value === '') this.value = '0';
+                });
+            });
+
+            // Province change auto calculation
+            document.getElementById('quickProvince').addEventListener('change', calculateQuickTax);
+
+            // Document checkboxes
+            document.addEventListener('change', function(e) {
+                if (e.target.type === 'checkbox' && e.target.closest('#documents')) {
+                    updateDocumentProgress();
+                }
+            });
+        }
+
+        // Export functions to global scope for onclick handlers
+        window.calculateQuickTax = calculateQuickTax;
+        window.calculateDetailedIncome = calculateDetailedIncome;
+        window.calculateDeductions = calculateDeductions;
+        window.calculateRrspTfsa = calculateRrspTfsa;
+        window.calculateInvestmentTax = calculateInvestmentTax;
+        window.calculateFamilyBenefits = calculateFamilyBenefits;
+        window.compareScenarios = compareScenarios;
+        window.generatePrintReport = generatePrintReport;
+        window.exportResults = exportResults;
+        window.saveScenario = saveScenario;
+        window.loadScenario = loadScenario;
+        window.deleteScenario = deleteScenario;
+        window.showPage = showPage;
+    </script>
+</body>
+</html>
